@@ -6,7 +6,7 @@ LDFLAGS = $(shell sdl2-config --libs)
 # Source and output
 SRC_DIR = ./src
 OBJ_DIR = ./obj
-BIN = main
+BIN = emulator
 
 # Files
 SRCS = $(wildcard $(SRC_DIR)/*.c)

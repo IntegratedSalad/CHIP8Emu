@@ -34,10 +34,11 @@ int main(int argc, char** argv)
 
     fprintf(stdout, "Opened file %s.\n", fileName);
 
+
     return 0;
 }
 
 void usage(void)
 {
-    printf("%s", "Usage: ./emu [chip8 program]\n");
+    printf("%s", "Usage: ./emulator [chip8 program]\n");
 }
