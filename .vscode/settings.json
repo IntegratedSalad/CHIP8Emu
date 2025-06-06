@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "emu.h": "c",
+        "stdio.h": "c"
+    }
+}

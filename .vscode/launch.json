@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug C Program",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/emulator",     // Path to your compiled binary
+            "args": ["${workspaceFolder}/roms/chip8"],                                   // Optional command-line arguments
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,                 // Use built-in VSCode terminal
+            "MIMode": "lldb",                         // Use "gdb" if you prefer
+            "preLaunchTask": "build",                 // See tasks.json
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for LLDB",
+                    "text": "settings set target.pretty-printing true",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}

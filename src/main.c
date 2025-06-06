@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
+#include "emu.h"
+#include "emusdl.h"
 
 void usage(void);
 int main(int argc, char** argv)
@@ -34,7 +36,16 @@ int main(int argc, char** argv)
 
     fprintf(stdout, "Opened file %s.\n", fileName);
 
+    SDL_App* sdlApp_p = NULL;
+    Emulator* emu_p = NULL;
 
+    Emulator_Init(&emu_p);
+    SDL_App_Init(&sdlApp_p);
+
+    SDL_App_Emulate(sdlApp_p, emu_p);
+
+    Emulator_DeInit(&emu_p);
+    SDL_App_DeInit(&sdlApp_p);
     return 0;
 }
 
