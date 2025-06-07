@@ -1,4 +1,6 @@
-#pragma once
+#ifndef STACK_H
+#define STACK_H
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,3 +17,5 @@ void Stack_DeInit(Stack**);
 int Stack_Push(Stack*);
 int Stack_Pop(Stack*);
 int Stack_Clear(Stack*);
+
+#endif // STACK_H

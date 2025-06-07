@@ -1,3 +1,6 @@
+#ifndef EMUSDL_H
+#define EMUSDL_H
+
 #include <SDL.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,4 +21,7 @@ int SDL_App_Init(SDL_App**);
 void SDL_App_DeInit(SDL_App**);
 void SDL_App_Run(SDL_App*, Emulator*); // main loop for SDL implementation
 
-void SDL_App_DrawXY(SDL_App*, int, int);
+void SDL_App_DrawXY(OPCodeData*, SDL_App*, Emulator*);
+void SDL_App_ClearScreen(OPCodeData*, SDL_App*, Emulator*);
+
+#endif // EMUSDL_H

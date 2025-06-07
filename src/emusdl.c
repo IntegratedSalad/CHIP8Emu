@@ -49,13 +49,24 @@ void SDL_App_DeInit(SDL_App** app_p)
     app_p = NULL;
 }
 
+void SDL_App_DrawXY(OPCodeData* opcodeData_p, SDL_App* app_p,  Emulator* emu_p)
+{
+    printf("Dupa!\n");
+}
+
 void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
 {
     SDL_Event e;
     int running = 1;
 
+    OPCodeData opcodeData;
     uint16_t currentInstructionCode = 0;
     currentInstructionCode = Emulator_Fetch(emu_p);
+    Emulator_ExecutionHandler execHandler = NULL;
+    uint8_t instructionType = Emulator_Decode(emu_p, currentInstructionCode, &opcodeData);
+
+    execHandler = Emulator_Execute(emu_p, instructionType);
+    execHandler(&opcodeData, app_p, emu_p);
 
     while (running)
     {
@@ -68,3 +79,6 @@ void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
         }
     }
 }
+
+// Function pointers assignment
+Emulator_ExecutionHandler clearScreenInstruction_FP = &SDL_App_DrawXY;

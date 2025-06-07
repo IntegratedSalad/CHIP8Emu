@@ -46,7 +46,42 @@ uint16_t Emulator_Fetch(Emulator* emu_p)
     const uint16_t instr = (*(emu_p->memoryBuffer + pc)) | 
                            (*(emu_p->memoryBuffer + pc + 1));
 
-
     emu_p->PC += 2;
     return instr;
+}
+
+uint8_t Emulator_Decode(Emulator* emu_p, const uint16_t instr, OPCodeData* opcodeData_p)
+{
+    const uint8_t type = instr >> 12; // 4 bit 'identifier'
+    // fill the entire opcodeData
+
+    opcodeData_p->vx = (instr >> 8) & (0xF); // second nibble
+    // opcodeData_p->vy = ;  // third nibble 
+    // opcodeData_p->n = ;   // fourth nibble
+    // opcodeData_p->nn = ;  // the second byte
+    // opcodeData_p->nnn = ; // the second, third and fourth nibbles 
+    // opcodeData_p->x = ;   // second nibble, in display/draw instruction
+    // opcodeData_p->y = ;   // third nibble, in display/draw instruction
+
+    return type;
+}
+
+Emulator_ExecutionHandler Emulator_Execute(Emulator*, 
+                                           const uint8_t type) // map executionHandler
+{
+    Emulator_ExecutionHandler execHandler = NULL;
+    switch (type)
+    {
+        case CLEAR_SCREEN_INSTR:
+        {
+            execHandler = clearScreenInstruction_FP;
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    return execHandler;
 }
