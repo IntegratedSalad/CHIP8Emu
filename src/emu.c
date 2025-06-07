@@ -24,12 +24,29 @@ void Emulator_Reset(Emulator* emu_p)
 {
     memset(emu_p, 0, sizeof(Emulator));
 }
-void Emulator_LoadProgram(Emulator*, const char*)
-{
 
+void Emulator_LoadProgram(Emulator* emu_p, int fd)
+{
+    char programBuff[MEMORY_SIZE];
+    int nRead = 0;
+    int totalRead = 0;
+    programBuff[MEMORY_SIZE-1] = '\0';
+
+    while ((nRead = read(fd, programBuff + totalRead, 1)) > 0)
+    {
+        totalRead += nRead;
+    }
+
+    memcpy(emu_p->memoryBuffer, programBuff, MEMORY_SIZE-1);
 }
 
-void Emulator_Run(Emulator*)
+uint16_t Emulator_Fetch(Emulator* emu_p)
 {
+    const uint16_t pc = emu_p->PC;
+    const uint16_t instr = (*(emu_p->memoryBuffer + pc)) | 
+                           (*(emu_p->memoryBuffer + pc + 1));
 
+
+    emu_p->PC += 2;
+    return instr;
 }

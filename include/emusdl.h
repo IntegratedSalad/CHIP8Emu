@@ -16,4 +16,6 @@ typedef struct
 
 int SDL_App_Init(SDL_App**);
 void SDL_App_DeInit(SDL_App**);
-void SDL_App_Emulate(SDL_App*, Emulator*); // main loop for SDL implementation
+void SDL_App_Run(SDL_App*, Emulator*); // main loop for SDL implementation
+
+void SDL_App_DrawXY(SDL_App*, int, int);

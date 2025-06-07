@@ -13,6 +13,7 @@ int main(int argc, char** argv)
 {
     if (argc < 2)
     {
+        // TODO: Add clock speed
         fprintf(stdout, "No arguments provided\n");
         usage();
         return -1;
@@ -42,7 +43,8 @@ int main(int argc, char** argv)
     Emulator_Init(&emu_p);
     SDL_App_Init(&sdlApp_p);
 
-    SDL_App_Emulate(sdlApp_p, emu_p);
+    Emulator_LoadProgram(emu_p, fd);
+    SDL_App_Run(sdlApp_p, emu_p);
 
     Emulator_DeInit(&emu_p);
     SDL_App_DeInit(&sdlApp_p);

@@ -49,10 +49,13 @@ void SDL_App_DeInit(SDL_App** app_p)
     app_p = NULL;
 }
 
-void SDL_App_Emulate(SDL_App* app_p, Emulator* emu_p)
+void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
 {
     SDL_Event e;
     int running = 1;
+
+    uint16_t currentInstructionCode = 0;
+    currentInstructionCode = Emulator_Fetch(emu_p);
 
     while (running)
     {
