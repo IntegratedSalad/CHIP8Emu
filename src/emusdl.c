@@ -11,13 +11,14 @@ int SDL_App_Init(SDL_App** app_pp)
 
     app_p->window = NULL;
     app_p->renderer = NULL;
-    app_p->surface = NULL;
+    // app_p->surface = NULL;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         fprintf(stderr, "SDL Couldn't be initialized. SDL_Error: %s\n", SDL_GetError());
         error = 1;
-    } else {
+    } else
+    {
         app_p->window = SDL_CreateWindow("Chip8 EmuSDL", 
                                          SDL_WINDOWPOS_UNDEFINED,
                                          SDL_WINDOWPOS_UNDEFINED,
@@ -29,19 +30,25 @@ int SDL_App_Init(SDL_App** app_pp)
         {
             fprintf(stderr, "Window couldn't be created. SDL_Error: %s\n", SDL_GetError());
             error = 1;
-        } else
-        {
-            app_p->surface = SDL_GetWindowSurface(app_p->window);
-            SDL_FillRect(app_p->surface, NULL, SDL_MapRGB(app_p->surface->format, 0x0, 0x0, 0x0));
-            SDL_UpdateWindowSurface(app_p->window);
+        } else {
+            app_p->renderer = SDL_CreateRenderer(app_p->window, -1, SDL_RENDERER_ACCELERATED);
+            if (app_p->renderer == NULL)
+            {
+                fprintf(stderr, "Renderer couldn't be created. SDL_Error: %s\n", SDL_GetError());
+                error = 1; 
+            } else {
+                SDL_SetRenderDrawColor(app_p->renderer, 0, 0, 0, 255);
+                SDL_RenderClear(app_p->renderer);
+                SDL_RenderPresent(app_p->renderer);
+            }
         }
     }
-
     return error;
 }
 
 void SDL_App_DeInit(SDL_App** app_p)
 {
+    // SDL_DestroyRenderer((*app_p)->renderer);
     SDL_DestroyWindow((*app_p)->window);
     SDL_Quit();
 
@@ -49,9 +56,64 @@ void SDL_App_DeInit(SDL_App** app_p)
     app_p = NULL;
 }
 
-void SDL_App_DrawXY(OPCodeData* opcodeData_p, SDL_App* app_p,  Emulator* emu_p)
+// TODO: setting memory buffer should be abstracted to the implementation-independent routine
+void SDL_App_DrawXY(OPCodeData* opcodeData_p, 
+                    SDL_App* app_p, 
+                    Emulator* emu_p)
 {
-    printf("Dupa!\n");
+    const uint8_t registerVXNum = opcodeData_p->vx;
+    const uint8_t registerVYNum = opcodeData_p->vy;
+    uint8_t x = emu_p->registerArray[registerVXNum] % 64;
+    uint8_t y = emu_p->registerArray[registerVYNum] % 32;
+    const uint8_t nBytes = opcodeData_p->n;
+    emu_p->registerArray[0xF] = 0;
+
+    uint16_t iRegisterAddress = emu_p->indexRegister; // SPRITE_MEMORY_OFFSET + emu_p->indexRegister; // we have to reserve space for sprite memory
+
+    for (uint8_t nByte = 0; nByte < nBytes; nByte++)
+    {
+        const uint8_t byteToDraw = *(emu_p->memoryBuffer + iRegisterAddress);
+        for (uint8_t bit = 0; bit < 8; bit++)
+        {
+            if ((byteToDraw >> bit)               & 0x1 !=
+                (emu_p->framebuffer[y][x] >> bit) & 0x1)
+                {
+                    emu_p->registerArray[0xF] = 1;
+                }
+            emu_p->framebuffer[y][x] ^= ((byteToDraw >> bit) & 0x1);
+            if (x == SCREEN_WIDTH - 1)
+            {
+                break;
+            }
+            x++;
+        }
+        if (y == SCREEN_HEIGHT - 1)
+        {
+            break;
+        }
+        y++;
+    }
+}
+
+void SDL_App_DrawFrameBuffer(SDL_App* app_p, Emulator* emu_p)
+{
+    SDL_SetRenderDrawColor(app_p->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    // SDL Dependent code - move this to separate function
+    for (int8_t px = 0; px < SCREEN_WIDTH; px++)
+    {
+        for (int8_t py = 0; py < SCREEN_HEIGHT; py++)
+        {
+            for (int8_t bit = 0; bit < 8; bit++)
+            {
+                if ((emu_p->framebuffer[py][px] >> bit) & 0x1)
+                {
+                    SDL_Rect r = {.h = PIXEL_SCALE, .w = PIXEL_SCALE, .x = px + bit, .y = py};
+                    SDL_RenderDrawRect(app_p->renderer, &r);
+                    // SDL_RenderDrawPoint(app_p->renderer, px + bit, py);
+                }
+            }
+        }
+    }
 }
 
 void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
@@ -61,15 +123,18 @@ void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
 
     OPCodeData opcodeData;
     uint16_t currentInstructionCode = 0;
-    currentInstructionCode = Emulator_Fetch(emu_p);
+    // currentInstructionCode = Emulator_Fetch(emu_p);
     Emulator_ExecutionHandler execHandler = NULL;
-    uint8_t instructionType = Emulator_Decode(emu_p, currentInstructionCode, &opcodeData);
+    uint8_t instructionType;// = Emulator_Decode(emu_p, currentInstructionCode, &opcodeData);
 
-    execHandler = Emulator_Execute(emu_p, instructionType);
-    execHandler(&opcodeData, app_p, emu_p);
+    // execHandler = Emulator_MapExecutionHandler(instructionType);
+    // execHandler(&opcodeData, app_p, emu_p);
 
+    uint32_t ticks = 0;
+    uint32_t delta = 0;
     while (running)
     {
+        ticks = SDL_GetTicks();
         while (SDL_PollEvent(&e))
         {
             if (e.type == SDL_QUIT)
@@ -77,8 +142,25 @@ void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
                 running = 0;
             }
         }
+
+        SDL_SetRenderDrawColor(app_p->renderer, 0x0, 0x0, 0x0, 0xFF);
+        SDL_RenderClear(app_p->renderer);
+        currentInstructionCode = Emulator_Fetch(emu_p);
+        printf("Current instruction: 0x%x\n", currentInstructionCode);
+        instructionType = Emulator_Decode(emu_p, currentInstructionCode, &opcodeData);
+        execHandler = Emulator_MapExecutionHandler(instructionType);
+        execHandler(&opcodeData, app_p, emu_p);
+
+        SDL_App_DrawFrameBuffer(app_p, emu_p);
+        SDL_RenderPresent(app_p->renderer);
+
+        delta = SDL_GetTicks() - ticks;
+        if (1000/60.0 > delta)
+        {
+            SDL_Delay(1000/60.0 - delta);
+        }
     }
 }
 
-// Function pointers assignment
-Emulator_ExecutionHandler clearScreenInstruction_FP = &SDL_App_DrawXY;
+// Function pointers assignment for implementation dependent function handlers
+Emulator_ExecutionHandler drawPixelsToScreenInstruction_FP = &SDL_App_DrawXY;

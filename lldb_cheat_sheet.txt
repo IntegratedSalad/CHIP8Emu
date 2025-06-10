@@ -1,2 +1,4 @@
 p/x programBuff[0] -> print hexadecimal value at address 0 of programBuff
 breakpoint set --file emu.c --line 39 - set breakpoint at line 39 in file emu.c
+bt -> backtrace
+up -> go one frame up

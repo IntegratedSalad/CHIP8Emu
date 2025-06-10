@@ -18,12 +18,16 @@
 #define SET_REGISTER_INSTR       0x6
 #define ADD_VALUE_REGISTER_INSTR 0x7
 #define SET_INDEX_REGISTER_INSTR 0xA
+#define JUMP_WITH_OFFSET_INSTR   0xB
 #define DRAW_INSTR               0xD
+
+#define SPRITE_MEMORY_OFFSET     0x400
+#define PROGRAM_MEMORY_OFFSET    0x200
 
 // Structures
 typedef struct
 {
-    uint8_t   memoryBuffer[MEMORY_SIZE]; // RAM
+    uint8_t   memoryBuffer[MEMORY_SIZE]; // RAM <- TODO: probably has to be string
     uint8_t   registerArray[NUM_OF_REGISTERS];
     uint16_t  indexRegister;
     Stack*    stack;
@@ -62,7 +66,14 @@ typedef void (*Emulator_ExecutionHandler)(const OPCodeData*,
                                           Emulator*);
 
 // Extern variables
-extern Emulator_ExecutionHandler clearScreenInstruction_FP;
+extern Emulator_ExecutionHandler drawPixelsToScreenInstruction_FP;
+
+// Implementation independent execution handlers
+Emulator_ExecutionHandler jumpInstruction_FP;
+Emulator_ExecutionHandler clearScreenInstruction_FP;
+Emulator_ExecutionHandler setIndexRegisterVXInstruction_FP;
+Emulator_ExecutionHandler setRegisterVXInstruction_FP;
+Emulator_ExecutionHandler addValueToRegisterVXInstruction_FP;
 
 // Function declarations
 void Emulator_Init(Emulator**);
@@ -72,6 +83,13 @@ void Emulator_Reset(Emulator*);
 void Emulator_LoadProgram(Emulator*, int);
 uint16_t Emulator_Fetch(Emulator*);
 uint8_t Emulator_Decode(Emulator*, const uint16_t, OPCodeData*);
-Emulator_ExecutionHandler Emulator_Execute(Emulator*, const uint8_t);
+void Emulator_Jump(OPCodeData*, void*, Emulator*);
+void Emulator_ClearScreen(OPCodeData*, void*, Emulator*);
+void Emulator_SetIndexRegister(OPCodeData*, void*, Emulator*);
+void Emulator_SetRegisterVX(OPCodeData*, void*, Emulator*);
+void Emulator_AddValueToRegisterVX(OPCodeData*, void*, Emulator*);
+void Emulator_JumpWithOffset(OPCodeData*, void*, Emulator*);
+
+Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t);
 
 #endif // EMU_H

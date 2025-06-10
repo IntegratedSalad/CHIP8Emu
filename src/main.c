@@ -41,7 +41,10 @@ int main(int argc, char** argv)
     Emulator* emu_p = NULL;
 
     Emulator_Init(&emu_p);
-    SDL_App_Init(&sdlApp_p);
+    if (SDL_App_Init(&sdlApp_p) != 0)
+    {
+        return -1;
+    }
 
     Emulator_LoadProgram(emu_p, fd);
     SDL_App_Run(sdlApp_p, emu_p);
