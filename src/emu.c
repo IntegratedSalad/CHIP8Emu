@@ -160,6 +160,7 @@ Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type)
         case JUMP_WITH_OFFSET_INSTR:
         {
             execHandler = jumpWithOffsetInstruction_FP;
+            break;
         }
         default:
         {

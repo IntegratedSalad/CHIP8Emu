@@ -48,7 +48,7 @@ int SDL_App_Init(SDL_App** app_pp)
 
 void SDL_App_DeInit(SDL_App** app_p)
 {
-    // SDL_DestroyRenderer((*app_p)->renderer);
+    SDL_DestroyRenderer((*app_p)->renderer);
     SDL_DestroyWindow((*app_p)->window);
     SDL_Quit();
 
@@ -65,51 +65,60 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
     const uint8_t registerVYNum = opcodeData_p->vy;
     uint8_t x = emu_p->registerArray[registerVXNum] % 64;
     uint8_t y = emu_p->registerArray[registerVYNum] % 32;
+
+    // printf("X: %x\n", x);
+    // printf("Y: %x\n", y);
+    
     const uint8_t nBytes = opcodeData_p->n;
     emu_p->registerArray[0xF] = 0;
-
     uint16_t iRegisterAddress = emu_p->indexRegister; // SPRITE_MEMORY_OFFSET + emu_p->indexRegister; // we have to reserve space for sprite memory
 
     for (uint8_t nByte = 0; nByte < nBytes; nByte++)
     {
-        const uint8_t byteToDraw = *(emu_p->memoryBuffer + iRegisterAddress);
-        for (uint8_t bit = 0; bit < 8; bit++)
+        const uint8_t byteToDraw = *(emu_p->memoryBuffer + iRegisterAddress + nByte);
+        for (uint8_t bit = 7; bit >= 0; bit--)
         {
-            if ((byteToDraw >> bit)               & 0x1 !=
-                (emu_p->framebuffer[y][x] >> bit) & 0x1)
-                {
-                    emu_p->registerArray[0xF] = 1;
-                }
-            emu_p->framebuffer[y][x] ^= ((byteToDraw >> bit) & 0x1);
+            // From MSBit to LSBit!
+            // if (((byteToDraw & emu_p->framebuffer[y][x]) & (0x1 << bit)) == 1 )
+            // {
+            //     emu_p->registerArray[0xF] = 1;
+            //     emu_p->framebuffer[y][x] &= ~(0x1 << bit);
+            // } else 
+            // {
+            //     if (((byteToDraw              & (0x1 << bit)) == 1) &&
+            //         (emu_p->framebuffer[y][x] & (0x1 << bit)) == 0 )
+            //     {
+            //         emu_p->framebuffer[y][x] |= (0x1 << bit);
+            //     }
+            // }
+            emu_p->framebuffer[y][x] ^= (byteToDraw & (0x1 << bit));
+            x++;
             if (x == SCREEN_WIDTH - 1)
             {
                 break;
             }
-            x++;
         }
         if (y == SCREEN_HEIGHT - 1)
         {
             break;
         }
         y++;
+        x = emu_p->registerArray[registerVXNum] % 64;
     }
 }
 
 void SDL_App_DrawFrameBuffer(SDL_App* app_p, Emulator* emu_p)
 {
     SDL_SetRenderDrawColor(app_p->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    // SDL Dependent code - move this to separate function
-    for (int8_t px = 0; px < SCREEN_WIDTH; px++)
+    for (int8_t py = 0; py < SCREEN_HEIGHT; py++)
     {
-        for (int8_t py = 0; py < SCREEN_HEIGHT; py++)
+        for (int8_t px = 0; px < SCREEN_WIDTH; px++)
         {
-            for (int8_t bit = 0; bit < 8; bit++)
+            for (int8_t bit = 7; bit >= 0; bit--)
             {
-                if ((emu_p->framebuffer[py][px] >> bit) & 0x1)
+                if ((emu_p->framebuffer[py][px] && (0x1 << bit)) == 1)
                 {
-                    SDL_Rect r = {.h = PIXEL_SCALE, .w = PIXEL_SCALE, .x = px + bit, .y = py};
-                    SDL_RenderDrawRect(app_p->renderer, &r);
-                    // SDL_RenderDrawPoint(app_p->renderer, px + bit, py);
+                    SDL_RenderDrawPoint(app_p->renderer, px, py);
                 }
             }
         }
