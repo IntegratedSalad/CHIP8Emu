@@ -66,12 +66,9 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
     uint8_t x = emu_p->registerArray[registerVXNum] % 64;
     uint8_t y = emu_p->registerArray[registerVYNum] % 32;
 
-    // printf("X: %x\n", x);
-    // printf("Y: %x\n", y);
-    
     const uint8_t nBytes = opcodeData_p->n;
     emu_p->registerArray[0xF] = 0;
-    uint16_t iRegisterAddress = emu_p->indexRegister; // SPRITE_MEMORY_OFFSET + emu_p->indexRegister; // we have to reserve space for sprite memory
+    uint16_t iRegisterAddress = emu_p->indexRegister;
 
     for (uint8_t nByte = 0; nByte < nBytes; nByte++)
     {
@@ -91,6 +88,7 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
             //         emu_p->framebuffer[y][x] |= (0x1 << bit);
             //     }
             // }
+            
             emu_p->framebuffer[y][x] ^= (byteToDraw & (0x1 << bit));
             x++;
             if (x == SCREEN_WIDTH - 1)
@@ -102,7 +100,7 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
         {
             break;
         }
-        y++;
+        y = (y + 1);
         x = emu_p->registerArray[registerVXNum] % 64;
     }
 }
@@ -116,9 +114,11 @@ void SDL_App_DrawFrameBuffer(SDL_App* app_p, Emulator* emu_p)
         {
             for (int8_t bit = 7; bit >= 0; bit--)
             {
-                if ((emu_p->framebuffer[py][px] && (0x1 << bit)) == 1)
+                if (emu_p->framebuffer[py][px] & (0x1 << bit))
                 {
-                    SDL_RenderDrawPoint(app_p->renderer, px, py);
+                    SDL_Rect r = {.x = (px) * 10, .y = py * 10, .w = 10, .h = 10};
+                    SDL_RenderFillRect(app_p->renderer, &r);
+                    SDL_RenderDrawRect(app_p->renderer, &r);
                 }
             }
         }

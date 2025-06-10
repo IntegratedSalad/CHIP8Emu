@@ -9,8 +9,8 @@
 
 #define MEMORY_SIZE               4096 // 4kB of RAM
 #define NUM_OF_REGISTERS          16
-#define FRAME_BUFFER_WIDTH_BYTES  64
-#define FRAME_BUFFER_HEIGHT_BYTES 32
+#define FRAME_BUFFER_WIDTH_BYTES  64 // it's 64x32 bits...
+#define FRAME_BUFFER_HEIGHT_BYTES 32 // | maybe change this to bits...
 
 // Instructions
 #define CLEAR_SCREEN_INSTR       0x0
