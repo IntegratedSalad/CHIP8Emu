@@ -35,7 +35,7 @@ void Emulator_LoadProgram(Emulator* emu_p, int fd)
         totalRead += nRead;
     }
 
-    memcpy(PROGRAM_MEMORY_OFFSET + emu_p->memoryBuffer, programBuff, MEMORY_SIZE-1);
+    memcpy(PROGRAM_MEMORY_OFFSET + emu_p->memoryBuffer, programBuff, MEMORY_SIZE - PROGRAM_MEMORY_OFFSET);
 }
 
 uint16_t Emulator_Fetch(Emulator* emu_p)

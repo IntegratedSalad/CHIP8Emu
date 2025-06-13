@@ -75,20 +75,6 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
         const uint8_t byteToDraw = *(emu_p->memoryBuffer + iRegisterAddress + nByte);
         for (uint8_t bit = 7; bit >= 0; bit--)
         {
-            // From MSBit to LSBit!
-            // if (((byteToDraw & emu_p->framebuffer[y][x]) & (0x1 << bit)) == 1 )
-            // {
-            //     emu_p->registerArray[0xF] = 1;
-            //     emu_p->framebuffer[y][x] &= ~(0x1 << bit);
-            // } else 
-            // {
-            //     if (((byteToDraw              & (0x1 << bit)) == 1) &&
-            //         (emu_p->framebuffer[y][x] & (0x1 << bit)) == 0 )
-            //     {
-            //         emu_p->framebuffer[y][x] |= (0x1 << bit);
-            //     }
-            // }
-            
             emu_p->framebuffer[y][x] ^= (byteToDraw & (0x1 << bit));
             x++;
             if (x == SCREEN_WIDTH - 1)
@@ -116,7 +102,7 @@ void SDL_App_DrawFrameBuffer(SDL_App* app_p, Emulator* emu_p)
             {
                 if (emu_p->framebuffer[py][px] & (0x1 << bit))
                 {
-                    SDL_Rect r = {.x = (px) * 10, .y = py * 10, .w = 10, .h = 10};
+                    SDL_Rect r = {.x = (px - bit) * 10, .y = py * 10, .w = 10, .h = 10};
                     SDL_RenderFillRect(app_p->renderer, &r);
                     SDL_RenderDrawRect(app_p->renderer, &r);
                 }

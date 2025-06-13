@@ -1,7 +1,7 @@
 # Compiler and flags
 # CC = gcc
 CC = clang
-CFLAGS = -g -O0 -Wall -I./include $(shell sdl2-config --cflags)
+CFLAGS = -g3 -O0 -Wall -I./include $(shell sdl2-config --cflags)
 # CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer -Wall -I./include $(shell sdl2-config --cflags)
 LDFLAGS = $(shell sdl2-config --libs)
 
