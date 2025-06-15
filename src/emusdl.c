@@ -63,11 +63,12 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
 {
     const uint8_t registerVXNum = opcodeData_p->vx;
     const uint8_t registerVYNum = opcodeData_p->vy;
-    const uint8_t x = (emu_p->registerArray[registerVXNum] % 64) / 8;
     uint8_t y = emu_p->registerArray[registerVYNum] % 32;
 
-    // const uint8_t byteX = x/8;
-    // const uint8_t bitX  = x%8;
+    const uint8_t x = (emu_p->registerArray[registerVXNum] % 64);
+    const uint8_t bitX  = x%8;
+    const uint8_t byteX = x/8;
+    uint8_t byteOverflow = 0;
 
     const uint8_t nBytes = opcodeData_p->n;
     emu_p->registerArray[0xF] = 0;
@@ -83,7 +84,18 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
                 break;
             }
             // XOR the BYTE at fb[y][x], bit by bit
-            emu_p->framebuffer[y][x] ^= (byteToDraw & (0x1 << bit));
+
+            byteOverflow = (bitX + (7 - bit)) / 8; 
+            
+            // If it goes to the next byte in fb, it has to start
+            // from MSB in that byte! byteToDraw has to continue as it were...
+            if (byteOverflow == 0)
+            {
+                emu_p->framebuffer[y][byteX] ^= ((byteToDraw & (0x1 << bit))) >> bitX;
+            } else 
+            {
+                emu_p->framebuffer[y][byteX + byteOverflow] ^= ((byteToDraw & (0x1 << bit))) << (8 - bitX);
+            }
         }
         y++; // increment the BIT
         if (y == SCREEN_HEIGHT - 1)

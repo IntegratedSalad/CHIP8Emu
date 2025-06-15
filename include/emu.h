@@ -27,7 +27,7 @@
 // Structures
 typedef struct
 {
-    uint8_t   memoryBuffer[MEMORY_SIZE]; // RAM <- TODO: probably has to be string
+    uint8_t   memoryBuffer[MEMORY_SIZE]; // RAM
     uint8_t   registerArray[NUM_OF_REGISTERS];
     uint16_t  indexRegister;
     Stack*    stack;
