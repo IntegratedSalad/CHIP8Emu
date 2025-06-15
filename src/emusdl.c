@@ -63,51 +63,59 @@ void SDL_App_DrawXY(OPCodeData* opcodeData_p,
 {
     const uint8_t registerVXNum = opcodeData_p->vx;
     const uint8_t registerVYNum = opcodeData_p->vy;
-    uint8_t x = emu_p->registerArray[registerVXNum] % 64;
+    const uint8_t x = (emu_p->registerArray[registerVXNum] % 64) / 8;
     uint8_t y = emu_p->registerArray[registerVYNum] % 32;
+
+    // const uint8_t byteX = x/8;
+    // const uint8_t bitX  = x%8;
 
     const uint8_t nBytes = opcodeData_p->n;
     emu_p->registerArray[0xF] = 0;
     uint16_t iRegisterAddress = emu_p->indexRegister;
 
-    for (uint8_t nByte = 0; nByte < nBytes; nByte++)
+    for (int8_t nByte = 0; nByte < nBytes; nByte++)
     {
         const uint8_t byteToDraw = *(emu_p->memoryBuffer + iRegisterAddress + nByte);
-        for (uint8_t bit = 7; bit >= 0; bit--)
+        for (int8_t bit = 7; bit >= 0; bit--)
         {
-            emu_p->framebuffer[y][x] ^= (byteToDraw & (0x1 << bit));
-            x++;
-            if (x == SCREEN_WIDTH - 1)
+            if ((x + bit) == SCREEN_WIDTH - 1)
             {
                 break;
             }
+            // XOR the BYTE at fb[y][x], bit by bit
+            emu_p->framebuffer[y][x] ^= (byteToDraw & (0x1 << bit));
         }
+        y++; // increment the BIT
         if (y == SCREEN_HEIGHT - 1)
         {
             break;
         }
-        y = (y + 1);
-        x = emu_p->registerArray[registerVXNum] % 64;
     }
 }
 
 void SDL_App_DrawFrameBuffer(SDL_App* app_p, Emulator* emu_p)
 {
     SDL_SetRenderDrawColor(app_p->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    for (int8_t py = 0; py < SCREEN_HEIGHT; py++)
+
+    uint8_t x = 0;
+    for (uint8_t fbH = 0; fbH < FRAME_BUFFER_HEIGHT_BYTES; fbH++)
     {
-        for (int8_t px = 0; px < SCREEN_WIDTH; px++)
+        for (uint8_t fbW = 0; fbW < FRAME_BUFFER_WIDTH_BYTES; fbW++)
         {
+            const uint8_t byteToDraw = emu_p->framebuffer[fbH][fbW];
             for (int8_t bit = 7; bit >= 0; bit--)
             {
-                if (emu_p->framebuffer[py][px] & (0x1 << bit))
+                /* Select Nth byte and draw it from MSB */
+                x = (7 - bit) + (8 * fbW);
+                if (byteToDraw & (0x1 << bit))
                 {
-                    SDL_Rect r = {.x = (px - bit) * 10, .y = py * 10, .w = 10, .h = 10};
+                    SDL_Rect r = {.x = x * 10, .y = fbH * 10, .w = 10, .h = 10};
                     SDL_RenderFillRect(app_p->renderer, &r);
                     SDL_RenderDrawRect(app_p->renderer, &r);
                 }
             }
         }
+        x = 0;
     }
 }
 

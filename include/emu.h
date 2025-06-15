@@ -9,8 +9,8 @@
 
 #define MEMORY_SIZE               4096 // 4kB of RAM
 #define NUM_OF_REGISTERS          16
-#define FRAME_BUFFER_WIDTH_BYTES  8  // it's 64x32 bits...
-#define FRAME_BUFFER_HEIGHT_BYTES 32 // maybe change this to bits...
+#define FRAME_BUFFER_WIDTH_BYTES  8
+#define FRAME_BUFFER_HEIGHT_BYTES 32 // bits
 
 // Instructions
 #define CLEAR_SCREEN_INSTR       0x0
@@ -31,7 +31,7 @@ typedef struct
     uint8_t   registerArray[NUM_OF_REGISTERS];
     uint16_t  indexRegister;
     Stack*    stack;
-    uint8_t   framebuffer[FRAME_BUFFER_WIDTH_BYTES][FRAME_BUFFER_HEIGHT_BYTES];
+    uint8_t   framebuffer[FRAME_BUFFER_HEIGHT_BYTES][FRAME_BUFFER_WIDTH_BYTES];
     uint8_t   delayTimer;
     uint8_t   soundTimer;
     uint16_t  PC;
