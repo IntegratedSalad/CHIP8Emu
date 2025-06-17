@@ -66,6 +66,14 @@ uint8_t Emulator_Decode(Emulator* emu_p, const uint16_t instr, OPCodeData* opcod
     return type;
 }
 
+/*
+  ** OPCODES
+  *
+  * Implementations of CHIP8 opcodes 
+  * 
+  * 
+*/
+
 // OPCODE: 0 0E0
 void Emulator_ClearScreen(OPCodeData* opcodeData_p, 
                           void* MediaHandler, 
@@ -82,13 +90,6 @@ void Emulator_Jump(OPCodeData* opcodeData_p,
     emu_p->PC = opcodeData_p->nnn;
 }
 
-// OPCODE: A NNN
-void Emulator_SetIndexRegister(OPCodeData* opcodeData_p, 
-                               void* MediaHandler, 
-                               Emulator* emu_p)
-{
-    emu_p->indexRegister = opcodeData_p->nnn;
-}
 
 // OPCODE: 6 XNN
 void Emulator_SetRegisterVX(OPCodeData* opcodeData_p, 
@@ -106,6 +107,14 @@ void Emulator_AddValueToRegisterVX(OPCodeData* opcodeData_p,
 {
     const int8_t registerNum = opcodeData_p->vx;
     emu_p->registerArray[registerNum] += opcodeData_p->nn;
+}
+
+// OPCODE: A NNN
+void Emulator_SetIndexRegister(OPCodeData* opcodeData_p, 
+                               void* MediaHandler, 
+                               Emulator* emu_p)
+{
+    emu_p->indexRegister = opcodeData_p->nnn;
 }
 
 // OPCODE: B NNN
@@ -174,7 +183,7 @@ Emulator_ExecutionHandler setIndexRegisterVXInstruction_FP = &Emulator_SetIndexR
 Emulator_ExecutionHandler setRegisterVXInstruction_FP = &Emulator_SetRegisterVX;
 Emulator_ExecutionHandler addValueToRegisterVXInstruction_FP = &Emulator_AddValueToRegisterVX;
 Emulator_ExecutionHandler jumpWithOffsetInstruction_FP = &Emulator_JumpWithOffset;
-Emulator_ExecutionHandler drawPixelsToScreenInstruction_FP = &Emulator_CopyVideoDataToFrameBuffer;
+Emulator_ExecutionHandler copyVideoDataToFrameBufferInstruction_FP = &Emulator_CopyVideoDataToFrameBuffer;
 
 // Map executionHandler to the instruction type
 Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type)
@@ -189,7 +198,7 @@ Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type)
         }
         case DRAW_INSTR:
         {
-            execHandler = drawPixelsToScreenInstruction_FP;
+            execHandler = copyVideoDataToFrameBufferInstruction_FP;
             break;
         }
         case JUMP_INSTR:
@@ -219,6 +228,7 @@ Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type)
         }
         default:
         {
+            fprintf(stderr, "Unrecognized instruction!: %x\n", type);
             break;
         }
     }

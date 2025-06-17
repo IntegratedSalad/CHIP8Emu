@@ -27,6 +27,8 @@
 #define SPRITE_MEMORY_OFFSET     0x400
 #define PROGRAM_MEMORY_OFFSET    0x200
 
+#define DEBUG_EMU                0
+
 // Structures
 typedef struct
 {
@@ -48,7 +50,7 @@ typedef struct
     uint8_t  vy;  // used to look up one of the 16 registers from V0 to FV
     uint8_t  n;   // the fourth nibble
     uint8_t  nn;  // the second byte
-    uint16_t nnn; // the second, third and foirth nibbles
+    uint16_t nnn; // the second, third and fourth nibbles
 } OPCodeData;
 
 // Function pointers

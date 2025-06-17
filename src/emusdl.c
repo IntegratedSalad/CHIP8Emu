@@ -89,12 +89,8 @@ void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
 
     OPCodeData opcodeData;
     uint16_t currentInstructionCode = 0;
-    // currentInstructionCode = Emulator_Fetch(emu_p);
     Emulator_ExecutionHandler execHandler = NULL;
-    uint8_t instructionType;// = Emulator_Decode(emu_p, currentInstructionCode, &opcodeData);
-
-    // execHandler = Emulator_MapExecutionHandler(instructionType);
-    // execHandler(&opcodeData, app_p, emu_p);
+    uint8_t instructionType;
 
     uint32_t ticks = 0;
     uint32_t delta = 0;
@@ -112,7 +108,9 @@ void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
         SDL_SetRenderDrawColor(app_p->renderer, 0x0, 0x0, 0x0, 0xFF);
         SDL_RenderClear(app_p->renderer);
         currentInstructionCode = Emulator_Fetch(emu_p);
+#if DEBUG_EMU_SDL
         printf("Current instruction: 0x%x\n", currentInstructionCode);
+#endif
         instructionType = Emulator_Decode(emu_p, currentInstructionCode, &opcodeData);
         execHandler = Emulator_MapExecutionHandler(instructionType);
         execHandler(&opcodeData, app_p, emu_p);

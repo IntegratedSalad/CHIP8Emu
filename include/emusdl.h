@@ -8,6 +8,7 @@
 #include "emu.h"
 
 #define PIXEL_SCALE   10
+#define DEBUG_EMU_SDL 1
 
 typedef struct 
 {
