@@ -19,7 +19,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    const char* fileName = argv[1]; // for now, default to SDL2
+    const char* fileName = argv[1];
     int fd = open(fileName, O_RDWR);
 
     if (fd < 0)

@@ -10,7 +10,10 @@
 #define MEMORY_SIZE               4096 // 4kB of RAM
 #define NUM_OF_REGISTERS          16
 #define FRAME_BUFFER_WIDTH_BYTES  8
-#define FRAME_BUFFER_HEIGHT_BYTES 32 // bits
+#define FRAME_BUFFER_HEIGHT_BITS  32
+
+#define SCREEN_WIDTH  64
+#define SCREEN_HEIGHT 32
 
 // Instructions
 #define CLEAR_SCREEN_INSTR       0x0
@@ -31,7 +34,7 @@ typedef struct
     uint8_t   registerArray[NUM_OF_REGISTERS];
     uint16_t  indexRegister;
     Stack*    stack;
-    uint8_t   framebuffer[FRAME_BUFFER_HEIGHT_BYTES][FRAME_BUFFER_WIDTH_BYTES];
+    uint8_t   framebuffer_p[FRAME_BUFFER_HEIGHT_BITS][FRAME_BUFFER_WIDTH_BYTES];
     uint8_t   delayTimer;
     uint8_t   soundTimer;
     uint16_t  PC;
@@ -66,7 +69,6 @@ typedef void (*Emulator_ExecutionHandler)(const OPCodeData*,
                                           Emulator*);
 
 // Extern variables
-extern Emulator_ExecutionHandler drawPixelsToScreenInstruction_FP;
 
 // Implementation independent execution handlers
 Emulator_ExecutionHandler jumpInstruction_FP;
@@ -74,6 +76,7 @@ Emulator_ExecutionHandler clearScreenInstruction_FP;
 Emulator_ExecutionHandler setIndexRegisterVXInstruction_FP;
 Emulator_ExecutionHandler setRegisterVXInstruction_FP;
 Emulator_ExecutionHandler addValueToRegisterVXInstruction_FP;
+Emulator_ExecutionHandler drawPixelsToScreenInstruction_FP;
 
 // Function declarations
 void Emulator_Init(Emulator**);
@@ -89,6 +92,7 @@ void Emulator_SetIndexRegister(OPCodeData*, void*, Emulator*);
 void Emulator_SetRegisterVX(OPCodeData*, void*, Emulator*);
 void Emulator_AddValueToRegisterVX(OPCodeData*, void*, Emulator*);
 void Emulator_JumpWithOffset(OPCodeData*, void*, Emulator*);
+void Emulator_CopyVideoDataToFrameBuffer(OPCodeData*, void*, Emulator*);
 
 Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t);
 

@@ -11,7 +11,6 @@ int SDL_App_Init(SDL_App** app_pp)
 
     app_p->window = NULL;
     app_p->renderer = NULL;
-    // app_p->surface = NULL;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -56,72 +55,23 @@ void SDL_App_DeInit(SDL_App** app_p)
     app_p = NULL;
 }
 
-// TODO: setting memory buffer should be abstracted to the implementation-independent routine
-void SDL_App_DrawXY(OPCodeData* opcodeData_p, 
-                    SDL_App* app_p, 
-                    Emulator* emu_p)
-{
-    const uint8_t registerVXNum = opcodeData_p->vx;
-    const uint8_t registerVYNum = opcodeData_p->vy;
-    uint8_t y = emu_p->registerArray[registerVYNum] % 32;
-
-    const uint8_t x = (emu_p->registerArray[registerVXNum] % 64);
-    const uint8_t bitX  = x%8;
-    const uint8_t byteX = x/8;
-    uint8_t byteOverflow = 0;
-
-    const uint8_t nBytes = opcodeData_p->n;
-    emu_p->registerArray[0xF] = 0;
-    uint16_t iRegisterAddress = emu_p->indexRegister;
-
-    for (int8_t nByte = 0; nByte < nBytes; nByte++)
-    {
-        const uint8_t byteToDraw = *(emu_p->memoryBuffer + iRegisterAddress + nByte);
-        for (int8_t bit = 7; bit >= 0; bit--)
-        {
-            if ((x + bit) == SCREEN_WIDTH - 1)
-            {
-                break;
-            }
-            // XOR the BYTE at fb[y][x], bit by bit
-
-            byteOverflow = (bitX + (7 - bit)) / 8; 
-            
-            // If it goes to the next byte in fb, it has to start
-            // from MSB in that byte! byteToDraw has to continue as it were...
-            if (byteOverflow == 0)
-            {
-                emu_p->framebuffer[y][byteX] ^= ((byteToDraw & (0x1 << bit))) >> bitX;
-            } else 
-            {
-                emu_p->framebuffer[y][byteX + byteOverflow] ^= ((byteToDraw & (0x1 << bit))) << (8 - bitX);
-            }
-        }
-        y++; // increment the BIT
-        if (y == SCREEN_HEIGHT - 1)
-        {
-            break;
-        }
-    }
-}
-
 void SDL_App_DrawFrameBuffer(SDL_App* app_p, Emulator* emu_p)
 {
     SDL_SetRenderDrawColor(app_p->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
     uint8_t x = 0;
-    for (uint8_t fbH = 0; fbH < FRAME_BUFFER_HEIGHT_BYTES; fbH++)
+    for (uint8_t fbY = 0; fbY < FRAME_BUFFER_HEIGHT_BITS; fbY++)
     {
-        for (uint8_t fbW = 0; fbW < FRAME_BUFFER_WIDTH_BYTES; fbW++)
+        for (uint8_t fbX = 0; fbX < FRAME_BUFFER_WIDTH_BYTES; fbX++)
         {
-            const uint8_t byteToDraw = emu_p->framebuffer[fbH][fbW];
+            const uint8_t byteToDraw = emu_p->framebuffer_p[fbY][fbX];
             for (int8_t bit = 7; bit >= 0; bit--)
             {
                 /* Select Nth byte and draw it from MSB */
-                x = (7 - bit) + (8 * fbW);
+                x = (7 - bit) + (8 * fbX);
                 if (byteToDraw & (0x1 << bit))
                 {
-                    SDL_Rect r = {.x = x * 10, .y = fbH * 10, .w = 10, .h = 10};
+                    SDL_Rect r = {.x = x * 10, .y = fbY * 10, .w = 10, .h = 10};
                     SDL_RenderFillRect(app_p->renderer, &r);
                     SDL_RenderDrawRect(app_p->renderer, &r);
                 }
@@ -131,6 +81,7 @@ void SDL_App_DrawFrameBuffer(SDL_App* app_p, Emulator* emu_p)
     }
 }
 
+// TODO: emu_p should be const const
 void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
 {
     SDL_Event e;
@@ -178,4 +129,3 @@ void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
 }
 
 // Function pointers assignment for implementation dependent function handlers
-Emulator_ExecutionHandler drawPixelsToScreenInstruction_FP = &SDL_App_DrawXY;
