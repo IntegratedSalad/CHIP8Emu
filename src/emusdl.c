@@ -112,7 +112,7 @@ void SDL_App_Run(SDL_App* app_p, Emulator* emu_p)
         printf("Current instruction: 0x%x\n", currentInstructionCode);
 #endif
         instructionType = Emulator_Decode(emu_p, currentInstructionCode, &opcodeData);
-        execHandler = Emulator_MapExecutionHandler(instructionType);
+        execHandler = Emulator_MapExecutionHandler(instructionType, &opcodeData);
         execHandler(&opcodeData, app_p, emu_p);
 
         SDL_App_DrawFrameBuffer(app_p, emu_p);

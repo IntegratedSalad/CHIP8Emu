@@ -1,0 +1,21 @@
+# Test suite for logical and arithmetic subinstructions
+# Defined in source as:
+
+# LOGICAL_ARITHMETIC_INSTR
+# LOGICAL_ARITHMETIC_SET_SUBINSTR
+# LOGICAL_ARITHMETIC_OR_SUBINSTR
+# LOGICAL_ARITHMETIC_AND_SUBINSTR
+# LOGICAL_ARITHMETIC_XOR_SUBINSTR
+# LOGICAL_ARITHMETIC_ADD_SUBINSTR
+# LOGICAL_ARITHMETIC_SUB_1_SUBINSTR
+# LOGICAL_ARITHMETIC_SUB_2_SUBINSTR
+# LOGICAL_ARITHMETIC_SHIFT_R_SUBINSTR
+# LOGICAL_ARITHMETIC_SHIFT_L_SUBINSTR
+
+name: logical_arithm_setSubinstructionTest
+comment: Nothing for now
+input:
+  program:
+  # program_file:
+output:
+  regs: []

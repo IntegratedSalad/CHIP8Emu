@@ -1,0 +1,14 @@
+
+
+
+Ideas:
+1. Maybe add a way to test programs?
+
+E.g. a CHIP8 Instructions (or just path to the .ch8 file) and in yaml/xml defined reference params for different registers and 
+any values we want to test.
+A file that takes .ch8, runs it and saves the registers or something.
+
+For larger programs with loops and what not, only debugger can be of help.
+3. Debugger should be written
+
+3. Include code coverage

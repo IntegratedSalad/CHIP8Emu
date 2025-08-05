@@ -24,6 +24,17 @@
 #define JUMP_WITH_OFFSET_INSTR   0xB
 #define DRAW_INSTR               0xD
 
+#define LOGICAL_ARITHMETIC_INSTR            0x8
+#define LOGICAL_ARITHMETIC_SET_SUBINSTR     0x0
+#define LOGICAL_ARITHMETIC_OR_SUBINSTR      0x1
+#define LOGICAL_ARITHMETIC_AND_SUBINSTR     0x2
+#define LOGICAL_ARITHMETIC_XOR_SUBINSTR     0x3
+#define LOGICAL_ARITHMETIC_ADD_SUBINSTR     0x4
+#define LOGICAL_ARITHMETIC_SUB_1_SUBINSTR   0x5 // VX = VX - VY
+#define LOGICAL_ARITHMETIC_SUB_2_SUBINSTR   0x7 // VX = VY - VX
+#define LOGICAL_ARITHMETIC_SHIFT_R_SUBINSTR 0x6
+#define LOGICAL_ARITHMETIC_SHIFT_L_SUBINSTR 0xE
+
 #define SPRITE_MEMORY_OFFSET     0x400
 #define PROGRAM_MEMORY_OFFSET    0x200
 
@@ -95,7 +106,8 @@ void Emulator_SetRegisterVX(OPCodeData*, void*, Emulator*);
 void Emulator_AddValueToRegisterVX(OPCodeData*, void*, Emulator*);
 void Emulator_JumpWithOffset(OPCodeData*, void*, Emulator*);
 void Emulator_CopyVideoDataToFrameBuffer(OPCodeData*, void*, Emulator*);
+void Emulator_LogicalSet(OPCodeData*, void*, Emulator*);
 
-Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t);
+Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t, const OPCodeData*);
 
 #endif // EMU_H

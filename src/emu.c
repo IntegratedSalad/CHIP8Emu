@@ -50,9 +50,13 @@ uint16_t Emulator_Fetch(Emulator* emu_p)
 
 uint8_t Emulator_Decode(Emulator* emu_p, const uint16_t instr, OPCodeData* opcodeData_p)
 {
+    /*
+     * To decode logical and arithmetic instructions, we do not have to
+     * decode further than first nibble (from MSB).
+     * In MapExecutionHandler function we can just differentiate between
+     * subtypes of these kind of instructions, by e.g. looking at the last nibble
+    */
     const uint8_t type = instr >> 12; // 4 bit 'identifier'
-
-    // TODO: Decode logical and arithmetic instructions and subroutines
 
     // fill the entire opcodeData
     opcodeData_p->vx =   (instr >> 8) & (0xF);   // second nibble
@@ -92,8 +96,8 @@ void Emulator_Jump(OPCodeData* opcodeData_p,
 
 
 // OPCODE: 6 XNN
-void Emulator_SetRegisterVX(OPCodeData* opcodeData_p, 
-                            void* MediaHandler, 
+void Emulator_SetRegisterVX(OPCodeData* opcodeData_p,
+                            void* MediaHandler,
                             Emulator* emu_p)
 {
     const int8_t registerNum = opcodeData_p->vx;
@@ -101,8 +105,8 @@ void Emulator_SetRegisterVX(OPCodeData* opcodeData_p,
 }
 
 // OPCODE: 7 XNN
-void Emulator_AddValueToRegisterVX(OPCodeData* opcodeData_p, 
-                                   void* MediaHandler, 
+void Emulator_AddValueToRegisterVX(OPCodeData* opcodeData_p,
+                                   void* MediaHandler,
                                    Emulator* emu_p)
 {
     const int8_t registerNum = opcodeData_p->vx;
@@ -110,16 +114,16 @@ void Emulator_AddValueToRegisterVX(OPCodeData* opcodeData_p,
 }
 
 // OPCODE: A NNN
-void Emulator_SetIndexRegister(OPCodeData* opcodeData_p, 
-                               void* MediaHandler, 
+void Emulator_SetIndexRegister(OPCodeData* opcodeData_p,
+                               void* MediaHandler,
                                Emulator* emu_p)
 {
     emu_p->indexRegister = opcodeData_p->nnn;
 }
 
 // OPCODE: B NNN
-void Emulator_JumpWithOffset(OPCodeData* opcodeData_p, 
-                             void* MediaHandler, 
+void Emulator_JumpWithOffset(OPCodeData* opcodeData_p,
+                             void* MediaHandler,
                              Emulator* emu_p)
 {
     const int8_t registerNum = opcodeData_p->vx;
@@ -156,7 +160,7 @@ void Emulator_CopyVideoDataToFrameBuffer(OPCodeData* opcodeData_p,
             }
 
             byteOverflow = (bitX + (7 - bit)) / 8; 
-            
+
             // If it goes to the next byte in fb, it has to start
             // from MSB in that byte! byteToDraw has to continue as it was...
             // XOR the BYTE at fb[y][x], bit by bit
@@ -176,6 +180,61 @@ void Emulator_CopyVideoDataToFrameBuffer(OPCodeData* opcodeData_p,
     }
 }
 
+// OPCODE: 8 XY 0
+void Emulator_LogicalSet(OPCodeData* opcodeData_p,
+                         void* MediaHandler,
+                         Emulator* emu_p)
+{
+    const uint8_t registerVy = opcodeData_p->vy;
+    const uint8_t registerVx = opcodeData_p->vx;
+    const uint8_t registerVyValue = emu_p->registerArray[registerVy];
+    emu_p->registerArray[registerVx] = registerVyValue;
+}
+
+// OPCODE: 8 XY 1
+void Emulator_LogicalOR(OPCodeData* opcodeData_p,
+                         void* MediaHandler,
+                         Emulator* emu_p)
+{
+    const uint8_t registerVy = opcodeData_p->vy;
+    const uint8_t registerVx = opcodeData_p->vx;
+    const uint8_t registerVyValue = emu_p->registerArray[registerVy];
+    emu_p->registerArray[registerVx] |= registerVyValue;
+}
+
+// OPCODE: 8 XY 2
+void Emulator_LogicalAND(OPCodeData* opcodeData_p, 
+                         void* MediaHandler, 
+                         Emulator* emu_p)
+{
+    const uint8_t registerVy = opcodeData_p->vy;
+    const uint8_t registerVx = opcodeData_p->vx;
+    const uint8_t registerVyValue = emu_p->registerArray[registerVy];
+    emu_p->registerArray[registerVx] &= registerVyValue;
+}
+
+// OPCODE: 8 XY 3
+void Emulator_LogicalXOR(OPCodeData* opcodeData_p, 
+                         void* MediaHandler, 
+                         Emulator* emu_p)
+{
+    const uint8_t registerVy = opcodeData_p->vy;
+    const uint8_t registerVx = opcodeData_p->vx;
+    const uint8_t registerVyValue = emu_p->registerArray[registerVy];
+    emu_p->registerArray[registerVx] ^= registerVyValue;
+}
+
+// OPCODE: 8 XY 4
+void Emulator_LogicalAdd(OPCodeData* opcodeData_p, 
+                         void* MediaHandler, 
+                         Emulator* emu_p)
+{
+    const uint8_t registerVy = opcodeData_p->vy;
+    const uint8_t registerVx = opcodeData_p->vx;
+    const uint8_t registerVyValue = emu_p->registerArray[registerVy];
+    emu_p->registerArray[registerVx] += registerVyValue;
+}
+
 // Function pointers assignment for platform independent implementations
 Emulator_ExecutionHandler jumpInstruction_FP = &Emulator_Jump;
 Emulator_ExecutionHandler clearScreen_Instruction_FP = &Emulator_ClearScreen;
@@ -184,9 +243,10 @@ Emulator_ExecutionHandler setRegisterVXInstruction_FP = &Emulator_SetRegisterVX;
 Emulator_ExecutionHandler addValueToRegisterVXInstruction_FP = &Emulator_AddValueToRegisterVX;
 Emulator_ExecutionHandler jumpWithOffsetInstruction_FP = &Emulator_JumpWithOffset;
 Emulator_ExecutionHandler copyVideoDataToFrameBufferInstruction_FP = &Emulator_CopyVideoDataToFrameBuffer;
+Emulator_ExecutionHandler logicalSetInstruction_FP = &Emulator_LogicalSet;
 
 // Map executionHandler to the instruction type
-Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type)
+Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type, const OPCodeData* opcodeData_p)
 {
     Emulator_ExecutionHandler execHandler = NULL;
     switch (type)
@@ -224,6 +284,19 @@ Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type)
         case JUMP_WITH_OFFSET_INSTR:
         {
             execHandler = jumpWithOffsetInstruction_FP;
+            break;
+        }
+        case LOGICAL_ARITHMETIC_INSTR:
+        {
+            const uint8_t fourthNibble = opcodeData_p->n;
+            switch (fourthNibble)
+            {
+                case LOGICAL_ARITHMETIC_SET_SUBINSTR:
+                {
+                    execHandler = logicalSetInstruction_FP;
+                    break;
+                }
+            }
             break;
         }
         default:
