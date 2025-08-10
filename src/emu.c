@@ -159,7 +159,7 @@ void Emulator_CopyVideoDataToFrameBuffer(OPCodeData* opcodeData_p,
                 break;
             }
 
-            byteOverflow = (bitX + (7 - bit)) / 8; 
+            byteOverflow = (bitX + (7 - bit)) / 8;
 
             // If it goes to the next byte in fb, it has to start
             // from MSB in that byte! byteToDraw has to continue as it was...
@@ -203,8 +203,8 @@ void Emulator_LogicalOR(OPCodeData* opcodeData_p,
 }
 
 // OPCODE: 8 XY 2
-void Emulator_LogicalAND(OPCodeData* opcodeData_p, 
-                         void* MediaHandler, 
+void Emulator_LogicalAND(OPCodeData* opcodeData_p,
+                         void* MediaHandler,
                          Emulator* emu_p)
 {
     const uint8_t registerVy = opcodeData_p->vy;
@@ -214,8 +214,8 @@ void Emulator_LogicalAND(OPCodeData* opcodeData_p,
 }
 
 // OPCODE: 8 XY 3
-void Emulator_LogicalXOR(OPCodeData* opcodeData_p, 
-                         void* MediaHandler, 
+void Emulator_LogicalXOR(OPCodeData* opcodeData_p,
+                         void* MediaHandler,
                          Emulator* emu_p)
 {
     const uint8_t registerVy = opcodeData_p->vy;

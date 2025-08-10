@@ -12,10 +12,11 @@
 # LOGICAL_ARITHMETIC_SHIFT_R_SUBINSTR
 # LOGICAL_ARITHMETIC_SHIFT_L_SUBINSTR
 
-name: logical_arithm_setSubinstructionTest
+name: logical_arithmetic_setSubinstructionTest
 comment: Nothing for now
 input:
   program:
   # program_file:
 output:
   regs: []
+---

@@ -1,15 +1,41 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "type": "shell",
-            "command": "gcc -g src/*.c -Iinclude -o main $(sdl2-config --cflags --libs)",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": ["$gcc"]
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Emulator",
+      "type": "shell",
+      "command": "make",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Tests",
+      "type": "shell",
+      "command": "make test",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run All Tests",
+      "type": "shell",
+      "command": "make run_tests",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Test (Prompt for YAML)",
+      "type": "shell",
+      "command": "make run_test FILE=${input:yamlFile}",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "yamlFile",
+      "type": "promptString",
+      "description": "Path to YAML file to test",
+      "default": "test/example.yaml"
+    }
+  ]
 }

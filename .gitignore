@@ -53,3 +53,4 @@ dkms.conf
 
 # Bin files
 emulator
+test_runner

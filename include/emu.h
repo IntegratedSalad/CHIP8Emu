@@ -65,7 +65,7 @@ typedef struct
 } OPCodeData;
 
 // Function pointers
-/** Emulator_ExecutionHandler 
+/** Emulator_ExecutionHandler
  * Execute instruction decoded with Emulator_Decode
  * 
  * @param[in] OPCodeData pointer to data decoded from the instruction opcode.
