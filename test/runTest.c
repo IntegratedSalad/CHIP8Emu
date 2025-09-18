@@ -7,8 +7,20 @@
 #include <stdbool.h>
 #include "emu.h"
 
-#define N_BYTES 64
-#define MAX_LINE_SIZE 128
+#define MAX_LINE_SIZE  128
+#define MAX_TOKEN_SIZE (MAX_LINE_SIZE / 2)
+
+typedef enum
+{
+    TOKEN_NAME,
+    TOKEN_COMMENT,
+    TOKEN_INPUT,
+    TOKEN_PROGRAM,
+    TOKEN_OUTPUT,
+    TOKEN_REGS,
+    TOKEN_END_TC,
+    TOKEN_INVALID
+} Token_e;
 
 typedef struct
 {
@@ -23,6 +35,8 @@ bool parseTest(int fd,
 
 ssize_t readLineFromFd(int fd, char line[MAX_LINE_SIZE],
                        int* totalOffset, bool* isOk);
+Token_e parseLine(const char line[MAX_LINE_SIZE],
+                  char valueStr[MAX_TOKEN_SIZE]);
 int main(int argc, char** argv)
 {
     Params_t paramsOut;
@@ -75,6 +89,7 @@ bool parseTest(int fd,
 {
     bool isOk = true;
     char line[MAX_LINE_SIZE];
+    char valueFromYaml[MAX_TOKEN_SIZE];
     line[MAX_LINE_SIZE - 1] = '\0';
     ssize_t bytes_read = 0;
     int totalOffset = 0;
@@ -83,9 +98,53 @@ bool parseTest(int fd,
         if (strnlen(line, MAX_LINE_SIZE) > 0)
         {
             fprintf(stdout, "Line: %s\n", line);
+            Token_e tok = parseLine(line, valueFromYaml);
+            switch (tok)
+            {
+                case TOKEN_NAME:
+                {
+                    printf("NAME! \n");
+                    break;
+                }
+                case TOKEN_COMMENT:
+                {
+                    printf("COMMENT! \n");
+                    break;
+                }
+                case TOKEN_INPUT:
+                {
+                    printf("INPUT! \n");
+                    break;
+                }
+                case TOKEN_PROGRAM:
+                {
+                    printf("PROGRAM! \n");
+                    break;
+                }
+                case TOKEN_OUTPUT:
+                {
+                    printf("OUTPUT! \n");
+                    break;
+                }
+                case TOKEN_REGS:
+                {
+                    printf("REGS! \n");
+                    break;
+                }
+                case TOKEN_END_TC:
+                {
+                    printf("END_TC! \n");
+                    break;
+                }
+                default:
+                {
+                    printf("INVALID! \n");
+                    isOk = false;
+                    return isOk;
+                }
+            }
             memset(line, 0, MAX_LINE_SIZE);
         }
-        memset(line, 0, MAX_LINE_SIZE);
     }
     return isOk;
 }
@@ -105,7 +164,6 @@ ssize_t readLineFromFd(int fd, char line[MAX_LINE_SIZE],
     ssize_t bytes_read = read(fd, buff, MAX_LINE_SIZE - 2);
     if (bytes_read <= 0)
     {
-        printf("br%ld\n", bytes_read);
         return bytes_read;
     }
 
@@ -116,25 +174,66 @@ ssize_t readLineFromFd(int fd, char line[MAX_LINE_SIZE],
          c++, i++);
     if (i >= MAX_LINE_SIZE - 2)
     {
-        printf("s:%s\n", buff);
-        fprintf(stderr, "Line too long! %d\nMAX: %d\n", i, MAX_LINE_SIZE);
+        printf("Line: %s\n", buff);
+        fprintf(stderr, "Line too long! %d\nMAX: %d\n", i, MAX_LINE_SIZE - 2);
         *isOk = false;
         return 0;
     }
     if (buff[i] == '\n')
     {
-        memcpy(line, buff, i);
         line[i] = '\0';
+        memcpy(line, buff, i);
         // printf("totalOffset: %d\n", *totalOffset);
         // printf("i: %d\n", i);
+
+        // i + 1 can be another '\n', (if there are empty lines):
+        // we have to increment until next char is not '\n
+        i++;
+        for (char* _c = c+1; *_c == '\n' && *_c != 0; _c++, i++);
         lseek(fd, *(totalOffset) + i, SEEK_SET);
     }
-    *totalOffset += i+1;
+    *totalOffset += i;
     return bytes_read;
+}
 
-    // Now - if we read past the new line, we have to reset
-    // the position TO the bytes read
+Token_e parseLine(const char line[MAX_LINE_SIZE], char valueStr[MAX_TOKEN_SIZE])
+{
+    Token_e tok = TOKEN_INVALID;
+    const char* end_p = strchr(line, '\0');
+    const char* colon_p = strchr(line, ':');
+    const char* comment_p = strchr(line, '#');
+    if (colon_p == NULL && comment_p != NULL && comment_p != line) return tok;
+    if (comment_p == line) return TOKEN_COMMENT;
 
-    // Corner cases:
-    // 1. We read the entire file on this call
+    char key[MAX_TOKEN_SIZE];
+    memcpy(key, line, (size_t)(colon_p - line));
+    memcpy(valueStr, colon_p + 2, (size_t)(end_p - colon_p - 1));
+    key[(size_t)(colon_p - line)] = '\0';
+    valueStr[(size_t)(end_p - colon_p)] = '\0';
+
+    if (strcmp("name", key))
+    {
+        tok = TOKEN_NAME;
+    } else if (strcmp("comment", key))
+    {
+        tok = TOKEN_COMMENT;
+    } else if (strcmp("input", key))
+    {
+        tok = TOKEN_INPUT;
+    } else if (strcmp("program", key))
+    {
+        tok = TOKEN_PROGRAM;
+    } else if (strcmp("output", key))
+    {
+        tok = TOKEN_OUTPUT;
+    } else if (strcmp("regs", key))
+    {
+        tok = TOKEN_REGS;
+    } else if (strcmp("---", key))
+    {
+        tok = TOKEN_END_TC;
+    }
+    printf("key s: %s\n", key);
+    printf("value s: %s\n", valueStr);
+    return tok;
 }

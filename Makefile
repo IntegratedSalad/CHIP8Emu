@@ -26,7 +26,7 @@ TEST_SRCS = $(wildcard $(TEST_DIR)/*.c)
 TEST_OBJS = $(patsubst $(TEST_DIR)/%.c, $(TEST_OBJ_DIR)/%.o, $(TEST_SRCS))
 
 # Default target
-all: $(BIN)
+all: $(BIN) $(TEST_BIN)
 
 # Main binary
 $(BIN): $(OBJS)
