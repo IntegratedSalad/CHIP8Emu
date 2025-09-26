@@ -38,6 +38,11 @@ void Emulator_LoadProgram(Emulator* emu_p, int fd)
     memcpy(PROGRAM_MEMORY_OFFSET + emu_p->memoryBuffer, programBuff, MEMORY_SIZE - PROGRAM_MEMORY_OFFSET);
 }
 
+void Emulator_LoadProgramFromMemoryArray(Emulator* emu_p, const uint8_t programMemory[MEMORY_SIZE])
+{
+    memcpy(PROGRAM_MEMORY_OFFSET + emu_p->memoryBuffer, programMemory, MEMORY_SIZE - PROGRAM_MEMORY_OFFSET);
+}
+
 uint16_t Emulator_Fetch(Emulator* emu_p)
 {
     const uint16_t pc = emu_p->PC;
@@ -73,9 +78,9 @@ uint8_t Emulator_Decode(Emulator* emu_p, const uint16_t instr, OPCodeData* opcod
 /*
   ** OPCODES
   *
-  * Implementations of CHIP8 opcodes 
-  * 
-  * 
+  * Implementations of CHIP8 opcodes
+  *
+  *
 */
 
 // OPCODE: 0 0E0

@@ -43,7 +43,7 @@
 // Structures
 typedef struct
 {
-    uint8_t   memoryBuffer[MEMORY_SIZE]; // RAM
+    uint8_t   memoryBuffer[MEMORY_SIZE]; // (TODO: Rename - programMemory) RAM
     uint8_t   registerArray[NUM_OF_REGISTERS];
     uint16_t  indexRegister;
     Stack*    stack;
@@ -97,6 +97,7 @@ void Emulator_DeInit(Emulator**);
 void Emulator_ClearMemory(Emulator*);
 void Emulator_Reset(Emulator*);
 void Emulator_LoadProgram(Emulator*, int);
+void Emulator_LoadProgramFromMemoryArray(Emulator*, const uint8_t programMemory[MEMORY_SIZE]);
 uint16_t Emulator_Fetch(Emulator*);
 uint8_t Emulator_Decode(Emulator*, const uint16_t, OPCodeData*);
 void Emulator_Jump(OPCodeData*, void*, Emulator*);
