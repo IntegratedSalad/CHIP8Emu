@@ -67,7 +67,7 @@ typedef struct
 // Function pointers
 /** Emulator_ExecutionHandler
  * Execute instruction decoded with Emulator_Decode
- * 
+ *
  * @param[in] OPCodeData pointer to data decoded from the instruction opcode.
  *                       It can contain register to take other data from,
  *                       x, y position at screen etc.
@@ -77,19 +77,10 @@ typedef struct
  * @param[in/out] Emulator pointer to emulator structure
  *
 */
-typedef void (*Emulator_ExecutionHandler)(const OPCodeData*, 
+typedef void (*Emulator_ExecutionHandler)(const OPCodeData*,
                                           void* MediaHandler,
                                           Emulator*);
 
-// Extern variables
-
-// Implementation independent execution handlers
-Emulator_ExecutionHandler jumpInstruction_FP;
-Emulator_ExecutionHandler clearScreenInstruction_FP;
-Emulator_ExecutionHandler setIndexRegisterVXInstruction_FP;
-Emulator_ExecutionHandler setRegisterVXInstruction_FP;
-Emulator_ExecutionHandler addValueToRegisterVXInstruction_FP;
-Emulator_ExecutionHandler drawPixelsToScreenInstruction_FP;
 
 // Function declarations
 void Emulator_Init(Emulator**);
@@ -108,6 +99,15 @@ void Emulator_AddValueToRegisterVX(OPCodeData*, void*, Emulator*);
 void Emulator_JumpWithOffset(OPCodeData*, void*, Emulator*);
 void Emulator_CopyVideoDataToFrameBuffer(OPCodeData*, void*, Emulator*);
 void Emulator_LogicalSet(OPCodeData*, void*, Emulator*);
+void Emulator_LogicalOR(OPCodeData*, void*, Emulator*);
+void Emulator_LogicalAND(OPCodeData*, void*, Emulator*);
+void Emulator_LogicalXOR(OPCodeData*, void*, Emulator*);
+void Emulator_LogicalAdd(OPCodeData*, void*, Emulator*);
+void Emulator_LogicalSub1(OPCodeData*, void*, Emulator*);
+void Emulator_LogicalSub2(OPCodeData*, void*, Emulator*);
+// void Emulator_LogicalSHFTL(OPCodeData*, void*, Emulator*);
+// void Emulator_LogicalSHFTR(OPCodeData*, void*, Emulator*);
+
 
 Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t, const OPCodeData*);
 

@@ -110,7 +110,6 @@ int main(int argc, char** argv)
     executeAndVerifyAllTests(testCaseArray);
     cleanUpTestSuite(testCaseArray);
 
-    // TODO: free all manually allocated tcs
     return 0;
 }
 
@@ -132,7 +131,7 @@ bool parseTestFile(int fd,
     uint8_t byteArray[NUM_OF_REGISTERS] = {0};
 
     int tcIdx = 0;
-    Test_t* tc_p = malloc(sizeof(Test_t));
+    Test_t* tc_p = NULL;
 
     bool isEndTc = false;
     while ((bytes_read = readLineFromFd(fd, line, &totalOffset, &isOk)) > 0)
@@ -146,6 +145,7 @@ bool parseTestFile(int fd,
                 case TOKEN_NAME:
                 {
                     printf("NAME! \n");
+                    tc_p = malloc(sizeof(Test_t)); // TODO: remove this here
                     memcpy(tc_p->name, valueFromYaml, MAX_TOKEN_SIZE);
                     // TODO: allocate here new tc
                     break;
@@ -192,7 +192,6 @@ bool parseTestFile(int fd,
                     printf("END_TC! \n");
                     tcArray_p[tcIdx] = tc_p;
                     tcIdx++;
-                    tc_p = malloc(sizeof(Test_t)); // TODO: also mark the start
                     isEndTc = true;
                     break;
                 }
@@ -309,7 +308,7 @@ void executeAndVerifyAllTests(Test_t* tcArray_p[MAX_TCS_TESTFILE])
     for (int tIdx = 0; tIdx < MAX_TCS_TESTFILE; tIdx++)
     {
         tp = tcArray_p[tIdx];
-        if (tp == NULL) return;
+        if (tp == NULL) break;
         testCount++;
         printf("%s starting...\n", tp->name);
         const float timeElapsed = executeTest(tp);
@@ -324,8 +323,7 @@ void executeAndVerifyAllTests(Test_t* tcArray_p[MAX_TCS_TESTFILE])
             printf("Test %s FAILED.\n", tp->name);
         }
     }
-
-    printf("%d/%d test cases passed.\n");
+    printf("%d/%d test cases passed.\n", testPassed, testCount);
 }
 
 float executeTest(Test_t* test_p)
@@ -437,7 +435,7 @@ void printError(void)
     {
         case ERROR_ARRAY_DOESNT_START_WITH_BRACKET:
         {
-            fprintf(stderr, "%s\n", "Array does not start with bracket!");
+            fprintf(stderr, "%s\n", "Array does not start with a bracket!");
             break;
         }
         case ERROR_INVALID_TOKEN:

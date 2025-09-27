@@ -46,7 +46,7 @@ void Emulator_LoadProgramFromMemoryArray(Emulator* emu_p, const uint8_t programM
 uint16_t Emulator_Fetch(Emulator* emu_p)
 {
     const uint16_t pc = emu_p->PC;
-    const uint16_t instr = (*(emu_p->memoryBuffer + pc)) << 8 | 
+    const uint16_t instr = (*(emu_p->memoryBuffer + pc)) << 8 |
                            (*(emu_p->memoryBuffer + pc + 1));
 
     emu_p->PC += 2;
@@ -65,7 +65,7 @@ uint8_t Emulator_Decode(Emulator* emu_p, const uint16_t instr, OPCodeData* opcod
 
     // fill the entire opcodeData
     opcodeData_p->vx =   (instr >> 8) & (0xF);   // second nibble
-    opcodeData_p->vy =   (instr >> 4) & (0xF);   // third nibble 
+    opcodeData_p->vy =   (instr >> 4) & (0xF);   // third nibble
     opcodeData_p->n =     instr       & (0xF);   // fourth nibble
     opcodeData_p->nn =    instr       & (0xFF);  // the second byte
     opcodeData_p->nnn =   instr       & (0xFFF);
@@ -80,25 +80,23 @@ uint8_t Emulator_Decode(Emulator* emu_p, const uint16_t instr, OPCodeData* opcod
   *
   * Implementations of CHIP8 opcodes
   *
-  *
 */
 
 // OPCODE: 0 0E0
-void Emulator_ClearScreen(OPCodeData* opcodeData_p, 
-                          void* MediaHandler, 
+void Emulator_ClearScreen(OPCodeData* opcodeData_p,
+                          void* MediaHandler,
                           Emulator* emu_p)
 {
     memset(emu_p->framebuffer_p, 0, sizeof(emu_p->framebuffer_p));
 }
 
 // OPCODE: 1 NNN
-void Emulator_Jump(OPCodeData* opcodeData_p, 
-                   void* MediaHandler, 
+void Emulator_Jump(OPCodeData* opcodeData_p,
+                   void* MediaHandler,
                    Emulator* emu_p)
 {
     emu_p->PC = opcodeData_p->nnn;
 }
-
 
 // OPCODE: 6 XNN
 void Emulator_SetRegisterVX(OPCodeData* opcodeData_p,
@@ -137,8 +135,8 @@ void Emulator_JumpWithOffset(OPCodeData* opcodeData_p,
 }
 
 // OPCODE: D XYN
-void Emulator_CopyVideoDataToFrameBuffer(OPCodeData* opcodeData_p, 
-                                        void* MediaHandler, 
+void Emulator_CopyVideoDataToFrameBuffer(OPCodeData* opcodeData_p,
+                                        void* MediaHandler,
                                         Emulator* emu_p)
 {
     const uint8_t registerVXNum = opcodeData_p->vx;
@@ -172,7 +170,7 @@ void Emulator_CopyVideoDataToFrameBuffer(OPCodeData* opcodeData_p,
             if (byteOverflow == 0)
             {
                 emu_p->framebuffer_p[y][byteX] ^= ((byteToDraw & (0x1 << bit))) >> bitX;
-            } else 
+            } else
             {
                 emu_p->framebuffer_p[y][byteX + byteOverflow] ^= ((byteToDraw & (0x1 << bit))) << (8 - bitX);
             }
@@ -230,8 +228,8 @@ void Emulator_LogicalXOR(OPCodeData* opcodeData_p,
 }
 
 // OPCODE: 8 XY 4
-void Emulator_LogicalAdd(OPCodeData* opcodeData_p, 
-                         void* MediaHandler, 
+void Emulator_LogicalAdd(OPCodeData* opcodeData_p,
+                         void* MediaHandler,
                          Emulator* emu_p)
 {
     const uint8_t registerVy = opcodeData_p->vy;
@@ -239,6 +237,69 @@ void Emulator_LogicalAdd(OPCodeData* opcodeData_p,
     const uint8_t registerVyValue = emu_p->registerArray[registerVy];
     emu_p->registerArray[registerVx] += registerVyValue;
 }
+
+// OPCODE: 8 XY 5
+void Emulator_LogicalSub1(OPCodeData* opcodeData_p,
+                         void* MediaHandler,
+                         Emulator* emu_p)
+{
+    const uint8_t registerVy = opcodeData_p->vy;
+    const uint8_t registerVx = opcodeData_p->vx;
+    const uint8_t registerVxValue = emu_p->registerArray[registerVx];
+    const uint8_t registerVyValue = emu_p->registerArray[registerVy];
+
+    emu_p->registerArray[registerVx] -= registerVyValue;
+    if (registerVxValue > registerVyValue)
+    {
+        emu_p->registerArray[0xF] = 1;
+    } else
+    {
+        emu_p->registerArray[0xF] = 0;
+    }
+}
+
+// OPCODE: 8 XY 7
+void Emulator_LogicalSub2(OPCodeData* opcodeData_p,
+                         void* MediaHandler,
+                         Emulator* emu_p)
+{
+    const uint8_t registerVy = opcodeData_p->vy;
+    const uint8_t registerVx = opcodeData_p->vx;
+    const uint8_t registerVxValue = emu_p->registerArray[registerVx];
+    const uint8_t registerVyValue = emu_p->registerArray[registerVy];
+
+    emu_p->registerArray[registerVx] = registerVyValue - registerVxValue;
+    if (registerVyValue > registerVxValue)
+    {
+        emu_p->registerArray[0xF] = 1;
+    } else
+    {
+        emu_p->registerArray[0xF] = 0;
+    }
+}
+
+/*
+#ifdef SHFT_INSTR_IMPL_COSMACVIP
+
+#ifdef SHFT_INSTR_IMPL_CHIP48_SUPERCHIP
+
+*/
+
+// OPCODE: 8 XY E
+// void Emulator_LogicalSHFTL_COSMACVIP(OPCodeData* opcodeData_p,
+//                            void* MediaHandler,
+//                            Emulator* emu_p)
+// {
+
+// }
+
+// // OPCODE: 8 XY 6
+// void Emulator_LogicalSHFTR_COSMACVIP(OPCodeData* opcodeData_p,
+//                            void* MediaHandler,
+//                            Emulator* emu_p)
+// {
+
+// }
 
 // Function pointers assignment for platform independent implementations
 Emulator_ExecutionHandler jumpInstruction_FP = &Emulator_Jump;
@@ -249,6 +310,12 @@ Emulator_ExecutionHandler addValueToRegisterVXInstruction_FP = &Emulator_AddValu
 Emulator_ExecutionHandler jumpWithOffsetInstruction_FP = &Emulator_JumpWithOffset;
 Emulator_ExecutionHandler copyVideoDataToFrameBufferInstruction_FP = &Emulator_CopyVideoDataToFrameBuffer;
 Emulator_ExecutionHandler logicalSetInstruction_FP = &Emulator_LogicalSet;
+Emulator_ExecutionHandler logicalORInstruction_FP = &Emulator_LogicalOR;
+Emulator_ExecutionHandler logicalANDInstruction_FP = &Emulator_LogicalAND;
+Emulator_ExecutionHandler logicalXORInstruction_FP = &Emulator_LogicalXOR;
+Emulator_ExecutionHandler logicalAddInstruction_FP = &Emulator_LogicalAdd;
+Emulator_ExecutionHandler logicalSub1Instruction_FP = &Emulator_LogicalSub1;
+Emulator_ExecutionHandler logicalSub2Instruction_FP = &Emulator_LogicalSub2;
 
 // Map executionHandler to the instruction type
 Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type, const OPCodeData* opcodeData_p)
@@ -299,6 +366,41 @@ Emulator_ExecutionHandler Emulator_MapExecutionHandler(const uint8_t type, const
                 case LOGICAL_ARITHMETIC_SET_SUBINSTR:
                 {
                     execHandler = logicalSetInstruction_FP;
+                    break;
+                }
+                case LOGICAL_ARITHMETIC_OR_SUBINSTR:
+                {
+                    execHandler = logicalORInstruction_FP;
+                    break;
+                }
+                case LOGICAL_ARITHMETIC_AND_SUBINSTR:
+                {
+                    execHandler = logicalANDInstruction_FP;
+                    break;
+                }
+                case LOGICAL_ARITHMETIC_XOR_SUBINSTR:
+                {
+                    execHandler = logicalXORInstruction_FP;
+                    break;
+                }
+                case LOGICAL_ARITHMETIC_ADD_SUBINSTR:
+                {
+                    execHandler = logicalAddInstruction_FP;
+                    break;
+                }
+                case LOGICAL_ARITHMETIC_SUB_1_SUBINSTR:
+                {
+                    execHandler = logicalSub1Instruction_FP;
+                    break;
+                }
+                case LOGICAL_ARITHMETIC_SUB_2_SUBINSTR:
+                {
+                    execHandler = logicalSub2Instruction_FP;
+                    break;
+                }
+                default:
+                {
+                    fprintf(stderr, "Unrecognized logical instruction!: %x\n", type);
                     break;
                 }
             }
